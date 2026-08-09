@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url";
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const outputRoot = join(projectRoot, "github-pages-dist");
 const publicRoot = join(projectRoot, "public");
+const [ownerName = "", repositoryName = ""] = (process.env.GITHUB_REPOSITORY ?? "").split("/");
+const defaultBasePath = repositoryName && repositoryName.toLowerCase() !== `${ownerName}.github.io`.toLowerCase()
+  ? `/${repositoryName}/`
+  : "/";
+const basePath = `/${(process.env.PAGES_BASE_PATH || defaultBasePath || "/playstudy-video-analysis/").replace(/^\/+|\/+$/g, "")}/`
+  .replace(/^\/\/$/, "/");
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(join(outputRoot, "playstudy"), { recursive: true });
@@ -12,20 +18,21 @@ await mkdir(join(outputRoot, "playstudy"), { recursive: true });
 let html = await readFile(join(publicRoot, "playstudy", "index.html"), "utf8");
 html = html
   .replace('<meta name="playstudy-root" content="/" />', "")
-  .replaceAll('href="/manifest.webmanifest"', 'href="./manifest.webmanifest"')
-  .replaceAll('href="/playstudy/', 'href="./playstudy/')
-  .replaceAll('src="/playstudy/', 'src="./playstudy/');
+  .replaceAll('href="/manifest.webmanifest"', `href="${basePath}manifest.webmanifest"`)
+  .replaceAll('href="/playstudy/', `href="${basePath}playstudy/`)
+  .replaceAll('src="/playstudy/', `src="${basePath}playstudy/`);
 await writeFile(join(outputRoot, "index.html"), html);
 
 const manifest = JSON.parse(await readFile(join(publicRoot, "manifest.webmanifest"), "utf8"));
-manifest.id = "./";
-manifest.start_url = "./";
-manifest.scope = "./";
+manifest.id = `${basePath}app`;
+manifest.start_url = `${basePath}?source=pwa-v10`;
+manifest.scope = basePath;
 manifest.icons = manifest.icons.map((icon) => ({
   ...icon,
-  src: `.${icon.src}`,
+  src: `${basePath}${icon.src.replace(/^\//, "")}`,
 }));
 delete manifest.share_target;
+delete manifest.launch_handler;
 await writeFile(join(outputRoot, "manifest.webmanifest"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 await cp(join(publicRoot, "sw.js"), join(outputRoot, "sw.js"));

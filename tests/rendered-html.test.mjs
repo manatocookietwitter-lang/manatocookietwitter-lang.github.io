@@ -34,7 +34,7 @@ test("opens PlayStudy directly at the site root", async () => {
 
   const html = await response.text();
   assert.match(html, /id="app"/);
-  assert.match(html, /href="\/playstudy\/styles\.css\?v=9"/);
+  assert.match(html, /href="\/playstudy\/styles\.css\?v=10"/);
   assert.match(html, /href="\/manifest\.webmanifest"/);
   assert.doesNotMatch(html, /\/playstudy\/index\.html[^"']*redirect/i);
 });
@@ -63,7 +63,7 @@ test("ships a root-scoped landscape PWA and a legacy worker recovery", async () 
   assert.match(appScript, /id="install-copy"/);
   assert.match(appScript, /\$\('#install-guide'\)\?\.showModal\(\)/);
   assert.doesNotMatch(appScript, /\(state\.canInstall\|\|iosInstallCandidate\(\)\)\?[^:]+:''/);
-  assert.match(rootWorker, /playstudy-shell-v9/);
+  assert.match(rootWorker, /playstudy-shell-v10/);
   assert.match(rootWorker, /const SCOPE_PATH = new URL\(self\.registration\.scope\)/);
   assert.match(rootWorker, /const isCoreAsset = APP_SHELL\.includes\(url\.pathname\)/);
   assert.match(rootWorker, /new Response\(/);
@@ -72,10 +72,10 @@ test("ships a root-scoped landscape PWA and a legacy worker recovery", async () 
   assert.match(pageSource, /useEffect\(\(\) =>/);
   assert.match(pageSource, /document\.createElement\("script"\)/);
   assert.match(pageSource, /__playStudyInstallPrompt/);
-  assert.match(pageSource, /script\.src = "\/playstudy\/app\.js\?v=9"/);
-  assert.match(pageSource, /href="\/playstudy\/styles\.css\?v=9"/);
-  assert.match(appScript, /navigator\.share/);
-  assert.match(appScript, /追加メニューを開く/);
+  assert.match(pageSource, /script\.src = "\/playstudy\/app\.js\?v=10"/);
+  assert.match(pageSource, /href="\/playstudy\/styles\.css\?v=10"/);
+  assert.doesNotMatch(appScript, /navigator\.share/);
+  assert.match(appScript, /標準ブラウザで追加する/);
   assert.match(appScript, /requestVideoFrameCallback/);
   assert.match(appScript, /document\.body\.classList\.toggle\('player-active'/);
   assert.match(styles, /html\.player-active,body\.player-active/);

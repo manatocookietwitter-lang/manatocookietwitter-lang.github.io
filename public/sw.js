@@ -1,4 +1,4 @@
-const CACHE = 'playstudy-shell-v9';
+const CACHE = 'playstudy-shell-v10';
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, '');
 const scoped = (path = '/') => `${SCOPE_PATH}${path}`;
 const APP_SHELL = [

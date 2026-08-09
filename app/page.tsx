@@ -30,7 +30,7 @@ function recoverLegacyServiceWorker() {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => /^(?:playstudy-v[1-8]|playstudy-shell-v[1-8])(?:-|$)/.test(key))
+            .filter((key) => /^(?:playstudy-v[1-9]|playstudy-shell-v[1-9])(?:-|$)/.test(key))
             .map((key) => caches.delete(key)),
         ),
       )
@@ -54,7 +54,7 @@ export default function Home() {
     playStudyWindow.__playStudyLoaded = true;
 
     const script = document.createElement("script");
-    script.src = "/playstudy/app.js?v=9";
+    script.src = "/playstudy/app.js?v=10";
     script.dataset.playstudy = "app";
     document.body.appendChild(script);
     return () => {
@@ -66,7 +66,7 @@ export default function Home() {
     <>
       <link
         rel="stylesheet"
-        href="/playstudy/styles.css?v=9"
+        href="/playstudy/styles.css?v=10"
         precedence="default"
       />
       <div id="app" />

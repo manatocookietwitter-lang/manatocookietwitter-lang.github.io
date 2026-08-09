@@ -435,10 +435,6 @@ async function backfillFirstFramePosters(items=state.videos){
  }
  if(changed){persist('videos');if(state.screen==='library')render()}
 }
-async function shareInstallLink(){
- if(!navigator.share)return false;
- try{await navigator.share({title:'PlayStudy',text:'PlayStudyをホーム画面に追加',url:location.href});return true}catch{return false}
-}
 async function requestPwaInstall(){
  if(standaloneMode())return toast('PlayStudyはインストール済みです');
  if(deferredInstallPrompt){
@@ -446,7 +442,7 @@ async function requestPwaInstall(){
   const choice=await deferredInstallPrompt.userChoice;
   deferredInstallPrompt=null;window.__playStudyInstallPrompt=null;state.canInstall=false;
   if(choice.outcome!=='accepted')render();
- }else if(!await shareInstallLink())$('#install-guide')?.showModal();
+ }else $('#install-guide')?.showModal();
 }
 window.addEventListener('playstudy-install-ready',()=>{deferredInstallPrompt=window.__playStudyInstallPrompt||deferredInstallPrompt;state.canInstall=!!deferredInstallPrompt;if(state.screen==='library')render()});
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();window.__playStudyInstallPrompt=event;deferredInstallPrompt=event;state.canInstall=true;if(state.screen==='library')render()});
@@ -492,9 +488,9 @@ topbar=function(title,back=false,extra=''){
 library=function(){
  if(!state.simpleMode)return advancedLibrary();
  const recent=[...state.videos].sort((a,b)=>(b.lastOpened||0)-(a.lastOpened||0)).slice(0,4);
- const installed=standaloneMode(),installLabel=installed?'アプリで使用中':state.canInstall?'アプリをインストール':'追加メニューを開く';
- const installAction=`<button class="simple-install" id="install-app" ${installed?'disabled aria-disabled="true"':''}>${installLabel}</button><span class="simple-install-note">対応ブラウザではそのままインストールできます</span>`;
- const installGuide=`<dialog id="install-guide" aria-labelledby="install-guide-title"><div class="dialog-head"><h3 id="install-guide-title">アプリとして使う</h3><button class="icon-btn" id="install-close" aria-label="閉じる">×</button></div><div class="dialog-body install-guide-body"><p>このブラウザでは直接インストールできません。Chrome・Edge・Safariでこのページを開き、共有ボタンまたはメニューから「ホーム画面に追加」を選んでください。</p><p class="install-guide-hint">下のボタンで共有メニューを開くか、URLをコピーできます。</p></div><div class="dialog-actions">${navigator.share?'<button class="btn primary" id="install-share">共有メニューを開く</button>':''}<button class="btn" id="install-copy">URLをコピー</button><button class="btn" id="install-done">閉じる</button></div></dialog>`;
+ const installed=standaloneMode(),installLabel=installed?'アプリで使用中':state.canInstall?'アプリをインストール':'標準ブラウザで追加する';
+ const installAction=`<button class="simple-install" id="install-app" ${installed?'disabled aria-disabled="true"':''}>${installLabel}</button><span class="simple-install-note">ホーム追加はSafari・Chrome・Edgeから行ってください</span>`;
+ const installGuide=`<dialog id="install-guide" aria-labelledby="install-guide-title"><div class="dialog-head"><h3 id="install-guide-title">標準ブラウザで追加</h3><button class="icon-btn" id="install-close" aria-label="閉じる">×</button></div><div class="dialog-body install-guide-body"><p>この画面から直接ホームへ追加すると、起動できないショートカットになる場合があります。</p><ol><li>下のボタンでURLをコピー</li><li>Safari・Chrome・Edgeに貼り付けて開く</li><li>そのブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選ぶ</li></ol><p class="install-guide-hint">既にある開けないアイコンは、新しいアイコンの起動確認後に削除してください。ブラウザのサイトデータは消さないでください。</p></div><div class="dialog-actions"><button class="btn primary" id="install-copy">URLをコピー</button><button class="btn" id="install-done">閉じる</button></div></dialog>`;
  const recents=recent.length?`<section class="simple-recents"><div class="section-head"><h3>最近の動画</h3><span class="subtle">タップして再開</span></div><div class="simple-video-list">${recent.map(videoCard).join('')}</div></section>`:'';
  return `<div class="app-shell simple-mode simple-library">${topbar('PlayStudy')}<main class="content simple-content"><section class="simple-start"><span class="simple-kicker">横画面でかんたん分析</span><h2>動画を開いて、<br>気づきを残す。</h2><p>動画を選ぶと、そのまま横画面の再生画面へ進みます。</p><button class="simple-open" id="add-video">動画を開く</button>${installAction}<small>動画とメモはこの端末内で扱われます</small></section>${recents}</main>${installGuide}<div id="toast" class="toast"></div></div>`
 };
@@ -515,7 +511,6 @@ enhanceBoundUI=function(){
  $('#install-app')?.addEventListener('click',requestPwaInstall);
  $('#install-close')?.addEventListener('click',()=>$('#install-guide')?.close());
  $('#install-done')?.addEventListener('click',()=>$('#install-guide')?.close());
- $('#install-share')?.addEventListener('click',async()=>{if(await shareInstallLink())$('#install-guide')?.close()});
  $('#install-copy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);toast('URLをコピーしました')}catch{toast('URLをコピーできませんでした')}});
  const playerVideo=$('#main-video'),tapHint=$('.video-tap-hint');if(playerVideo&&tapHint){const syncHint=()=>tapHint.classList.toggle('is-hidden',!playerVideo.paused);playerVideo.addEventListener('play',syncHint);playerVideo.addEventListener('pause',syncHint);syncHint()}
  const saveQuickNote=()=>{const input=$('#quick-note-input'),text=input?.value.trim();if(!text)return toast('メモを入力してください');const vid=$('#main-video'),time=vid?.currentTime||activeV()?.last||0;state.notes.push({id:uid('n'),videoId:activeV().id,kind:'観察',title:text,body:'',type:'point',time,tagIds:[]});activeV().last=time;persistMany('notes','videos');render();toast('メモを保存しました')};
